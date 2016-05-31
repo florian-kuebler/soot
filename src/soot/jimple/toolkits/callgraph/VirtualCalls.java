@@ -21,10 +21,10 @@ package soot.jimple.toolkits.callgraph;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import soot.AnySubType;
 import soot.ArrayType;
@@ -117,8 +117,8 @@ public final class VirtualCalls
         return ret;
     }
 
-    private final Map<Type,List<Type>> baseToSubTypes = new HashMap<Type,List<Type>>();
-    private final Map<Pair<Type, NumberedString>, List<Pair<Type,NumberedString>>> baseToPossibleSubTypes = new HashMap<Pair<Type,NumberedString>, List<Pair<Type,NumberedString>>>();
+    private final Map<Type,Set<Type>> baseToSubTypes = new HashMap<Type,Set<Type>>();
+    private final Map<Pair<Type, NumberedString>, Set<Type>> baseToPossibleSubTypes = new HashMap<Pair<Type,NumberedString>, Set<Type>>();
 
     public void resolve( Type t, Type declaredType, NumberedString subSig,
     		SootMethod container, ChunkedQueue<SootMethod> targets ) {
@@ -152,6 +152,8 @@ public final class VirtualCalls
             if( target != null ) targets.add( target );
         } else if( t instanceof AnySubType ) {
         	RefType base = ((AnySubType) t).getBase();
+        	assert(declaredType instanceof RefType);
+        	SootClass declaredClass = ((RefType) declaredType).getSootClass();
         	
         	/*
         	 * Whenever any sub type of a specific type is considered as 
@@ -164,15 +166,13 @@ public final class VirtualCalls
         	 * 
         	 * Since Java has no multiple inheritance call by signature resolution is only activated if the base is an interface.
         	 */
-        	if (options.library() == CGOptions.library_signature_resolution && base.getSootClass().isInterface()) {
-        		assert(declaredType instanceof RefType);
+        	if (options.library() == CGOptions.library_signature_resolution && declaredClass.isInterface()) {
             	Pair<Type, NumberedString> pair = new Pair<Type, NumberedString>(base, subSig);
-            	List<Pair<Type, NumberedString>> types = baseToPossibleSubTypes.get(pair);
+            	Set<Type> types = baseToPossibleSubTypes.get(pair);
             	
             	// if this type and method has been resolved earlier we can just retrieve the previous result.
             	if (types != null) {
-            		for(Pair<Type, NumberedString> tuple : types) {
-            			Type st = tuple.getO1();
+            		for(Type st : types) {
             			if (!fastHierachy.canStoreType( st, declaredType)) {
             				resolve( st, st, sigType, subSig, container, targets, appOnly);
             			} else {
@@ -182,10 +182,10 @@ public final class VirtualCalls
             		return;
             	}
             	
-            	baseToPossibleSubTypes.put(pair, types = new ArrayList<Pair<Type, NumberedString>>());
+            	baseToPossibleSubTypes.put(pair, types = new HashSet<Type>());
             	
             	// get return type; method name; parameter types
-            	String[] split = subSig.getString().replaceAll("(.*) (.*)\\((.*)\\)", "$1;$2;$3").split(";");
+            	String[] split = subSig.getString().replaceAll("(.*) (.*)\\((.*)\\)", "$1;$2;$3").replace("'", "").split(";");
 
             	Type declaredReturnType = Scene.v().getType(split[0]);
             	String declaredName = split[1];
@@ -227,27 +227,26 @@ public final class VirtualCalls
         							if (!sc.isFinal()) {
         								NumberedString newSubSig = sm.getNumberedSubSignature();
 										resolve( st, st, sigType, newSubSig, container, targets, appOnly);
-        								types.add(new Pair<Type, NumberedString>(st, newSubSig));
+        								types.add(st);
         							}
         						} else {
         							resolve (st, declaredType, sigType, subSig, container, targets, appOnly);
-        							types.add(new Pair<Type, NumberedString>(st, subSig));
+        							types.add(st);
         						}
         					}
         				}
             		}
             	}
         	} else {
-	            List<Type> subTypes = baseToSubTypes.get(base);
+	            Set<Type> subTypes = baseToSubTypes.get(base);
 	            if( subTypes != null ) {
-	                for( Iterator<Type> stIt = subTypes.iterator(); stIt.hasNext(); ) {
-	                    final Type st = stIt.next();
+	            	for (Type st : subTypes) {
 	                    resolve( st, declaredType, sigType, subSig, container, targets, appOnly );
-	                }
+	            	}
 	                return;
 	            }
 	
-	            baseToSubTypes.put(base, subTypes = new ArrayList<Type>() );
+	            baseToSubTypes.put(base, subTypes = new HashSet<Type>() );
 	
 	            subTypes.add(base);
 	
@@ -256,22 +255,22 @@ public final class VirtualCalls
 	            FastHierarchy fh = fastHierachy;
 	            SootClass cl = base.getSootClass();
 	
-	            if( workset.add( cl ) ) worklist.add( cl );
+	            workset.add(cl);
+	            worklist.add(cl);
+	            
 	            while( !worklist.isEmpty() ) {
 	                cl = worklist.removeFirst();
 	                if( cl.isInterface() ) {
-	                    for( Iterator<SootClass> cIt = fh.getAllImplementersOfInterface(cl).iterator(); cIt.hasNext(); ) {
-	                        final SootClass c = cIt.next();
-	                        if( workset.add( c ) ) worklist.add( c );
-	                    }
+	                	for (SootClass c : fh.getAllImplementersOfInterface(cl)) {
+	                		if (workset.add(c)) worklist.add(c);
+	                	}
 	                } else {
 	                    if( cl.isConcrete() ) {
 	                        resolve( cl.getType(), declaredType, sigType, subSig, container, targets, appOnly );
 	                        subTypes.add(cl.getType());
 	                    }
-	                    for( Iterator<SootClass> cIt = fh.getSubclassesOf( cl ).iterator(); cIt.hasNext(); ) {
-	                        final SootClass c = cIt.next();
-	                        if( workset.add( c ) ) worklist.add( c );
+	                    for (SootClass c : fh.getSubclassesOf(cl)) {
+	                    	if (workset.add(c)) worklist.add(c);
 	                    }
 	                }
 	            }
