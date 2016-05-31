@@ -346,6 +346,12 @@ Composite dbdb_force_recompileChild = dbdb_force_recompileCreate(getPageContaine
 		}
 
 			
+		if (isEnableButton("call-by-signature")) {
+			buttonList.add(getcgcg_chacall_by_signature_widget());	
+			getcgcg_chacall_by_signature_widget().getButton().addSelectionListener(this);
+		}
+
+			
 		if (isEnableButton("enabled")) {
 			buttonList.add(getcgcg_sparkenabled_widget());	
 			getcgcg_sparkenabled_widget().getButton().addSelectionListener(this);
@@ -761,11 +767,15 @@ Composite dbdb_force_recompileChild = dbdb_force_recompileCreate(getPageContaine
 		
 		addToEnableGroup("cg", "cg.cha", getcgcg_chaapponly_widget(), "apponly");
 		
+		addToEnableGroup("cg", "cg.cha", getcgcg_chacall_by_signature_widget(), "call-by-signature");
+		
 		getcgcg_chaenabled_widget().getButton().addSelectionListener(this);
 		
 		getcgcg_chaverbose_widget().getButton().addSelectionListener(this);
 		
 		getcgcg_chaapponly_widget().getButton().addSelectionListener(this);
+		
+		getcgcg_chacall_by_signature_widget().getButton().addSelectionListener(this);
 		
 		
 		makeNewEnableGroup("cg", "cg.spark");
@@ -3113,6 +3123,16 @@ Composite dbdb_force_recompileChild = dbdb_force_recompileCreate(getPageContaine
 
 		if (boolRes != defBoolRes) {
 			getConfig().put(getcgcg_chaapponly_widget().getAlias(), new Boolean(boolRes));
+		}
+		
+		boolRes = getcgcg_chacall_by_signature_widget().getButton().getSelection();
+		
+		
+		defBoolRes = false;
+		
+
+		if (boolRes != defBoolRes) {
+			getConfig().put(getcgcg_chacall_by_signature_widget().getAlias(), new Boolean(boolRes));
 		}
 		
 		boolRes = getcgcg_sparkenabled_widget().getButton().getSelection();
@@ -7873,6 +7893,16 @@ Composite dbdb_force_recompileChild = dbdb_force_recompileCreate(getPageContaine
 	
 	public BooleanOptionWidget getcgcg_chaapponly_widget() {
 		return cgcg_chaapponly_widget;
+	}	
+	
+	private BooleanOptionWidget cgcg_chacall_by_signature_widget;
+	
+	private void setcgcg_chacall_by_signature_widget(BooleanOptionWidget widget) {
+		cgcg_chacall_by_signature_widget = widget;
+	}
+	
+	public BooleanOptionWidget getcgcg_chacall_by_signature_widget() {
+		return cgcg_chacall_by_signature_widget;
 	}	
 	
 	private BooleanOptionWidget cgcg_sparkenabled_widget;
@@ -13582,6 +13612,22 @@ Composite dbdb_force_recompileChild = dbdb_force_recompileCreate(getPageContaine
 		}
 
 		setcgcg_chaapponly_widget(new BooleanOptionWidget(editGroupcgcg_cha, SWT.NONE, new OptionData("AppOnly", "p", "cg.cha","apponly", "\nSetting this option to true causes Soot to only consider \napplication classes when building the callgraph. The resulting \ncallgraph will be inherently unsound. Still, this option can \nmake sense if performance optimization and memory reduction are \nyour primary goal.", defaultBool)));
+		
+		
+		
+		defKey = "p"+" "+"cg.cha"+" "+"call-by-signature";
+		defKey = defKey.trim();
+
+		if (isInDefList(defKey)) {
+			defaultBool = getBoolDef(defKey);	
+		}
+		else {
+			
+			defaultBool = false;
+			
+		}
+
+		setcgcg_chacall_by_signature_widget(new BooleanOptionWidget(editGroupcgcg_cha, SWT.NONE, new OptionData("Call-by-Signature", "p", "cg.cha","call-by-signature", "\nGenerates a complete call-by-signature callgraph.", defaultBool)));
 		
 		
 

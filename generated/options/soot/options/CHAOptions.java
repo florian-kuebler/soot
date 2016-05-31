@@ -68,5 +68,15 @@ public class CHAOptions
         return soot.PhaseOptions.getBoolean( options, "apponly" );
     }
     
+    /** Call-by-Signature --
+    
+     * Generates a complete call-by-signature callgraph..
+    
+     * Generates a complete call-by-signature callgraph.
+     */
+    public boolean call_by_signature() {
+        return soot.PhaseOptions.getBoolean( options, "call-by-signature" );
+    }
+    
 }
         

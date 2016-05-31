@@ -1257,6 +1257,12 @@ public class AntTask extends MatchingTask {
             addArg("apponly:"+(arg?"true":"false"));
           }
       
+          public void setcall_by_signature(boolean arg) {
+            addArg("-p");
+            addArg("cg.cha");
+            addArg("call-by-signature:"+(arg?"true":"false"));
+          }
+      
         }
     
         public Object createp_cg_spark() {

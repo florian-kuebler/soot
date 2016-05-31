@@ -2069,7 +2069,8 @@ public class Options extends OptionsBase {
                 +"\n\nRecognized options (with default values):\n"
                 +padOpt( "enabled (true)", "" )
                 +padOpt( "verbose (false)", "Print statistics about the resulting call graph" )
-                +padOpt( "apponly (false)", "Consider only application classes" );
+                +padOpt( "apponly (false)", "Consider only application classes" )
+                +padOpt( "call-by-signature (false)", "Generates a complete call-by-signature callgraph." );
     
         if( phaseName.equals( "cg.spark" ) )
             return "Phase "+phaseName+":\n"+
@@ -3025,7 +3026,8 @@ public class Options extends OptionsBase {
             return ""
                 +"enabled "
                 +"verbose "
-                +"apponly ";
+                +"apponly "
+                +"call-by-signature ";
     
         if( phaseName.equals( "cg.spark" ) )
             return ""
@@ -3640,7 +3642,8 @@ public class Options extends OptionsBase {
             return ""
               +"enabled:true "
               +"verbose:false "
-              +"apponly:false ";
+              +"apponly:false "
+              +"call-by-signature:false ";
     
         if( phaseName.equals( "cg.spark" ) )
             return ""

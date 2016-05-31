@@ -40,6 +40,7 @@ import soot.SootMethod;
 import soot.Type;
 import soot.jimple.SpecialInvokeExpr;
 import soot.options.CGOptions;
+import soot.options.CHAOptions;
 import soot.toolkits.scalar.Pair;
 import soot.util.Chain;
 import soot.util.LargeNumberedMap;
@@ -53,6 +54,7 @@ import soot.util.queue.ChunkedQueue;
 public final class VirtualCalls
 { 
 	private CGOptions options = new CGOptions( PhaseOptions.v().getPhaseOptions("cg") );
+	private CHAOptions chaOptions = new CHAOptions( PhaseOptions.v().getPhaseOptions("cg.cha"));
 	
     public VirtualCalls( Singletons.Global g ) {	
     }
@@ -166,7 +168,8 @@ public final class VirtualCalls
         	 * 
         	 * Since Java has no multiple inheritance call by signature resolution is only activated if the base is an interface.
         	 */
-        	if (options.library() == CGOptions.library_signature_resolution && declaredClass.isInterface()) {
+        	if ((options.library() == CGOptions.library_signature_resolution && declaredClass.isInterface())
+        			|| chaOptions.call_by_signature()) {
             	Pair<Type, NumberedString> pair = new Pair<Type, NumberedString>(base, subSig);
             	Set<Type> types = baseToPossibleSubTypes.get(pair);
             	
